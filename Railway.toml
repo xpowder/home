@@ -1,0 +1,10 @@
+[build]
+# Use Docker to build
+builder = "Dockerfile"
+
+[deploy]
+# The command to run your app in production
+start = "npm start"
+
+[env]
+NEXT_PUBLIC_BACKEND_API_URL=https://backend-homezup-production.up.railway.app/api 

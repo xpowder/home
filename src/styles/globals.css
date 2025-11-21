@@ -1,0 +1,124 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* #09AECA */
+
+/* css testing */
+/* *,
+*::before,
+*::after {
+  box-sizing: border-box;
+  outline: 2px solid lime;
+  background: hsl(0 100% 50% / .1);
+} */
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f1115;
+  --primary: #028cfd;
+  --primaryDark: #018cfa;
+  --primaryLight: #ecf6fe;
+  --secondary: #f0f9ff;
+  --headingColor: #071621;
+  --subtextColor: #4b4b4b;
+  --subtextSecColor: #e4e4e4;
+  --supportingGradientColor: #07b197;
+  --supportingColor: #ff9f1c;
+
+  /* special  */
+  /* normal + focus */
+  --color-btn: #028cfd;
+  --color-btnHover: #0276d1;
+  --color-btnPressed: #0260a8;
+  --color-btndisabled: #a3a3a3;
+
+  --maxWidth: 1440px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primaryDark: var(--primaryDark);
+  --color-primaryLight: var(--primaryLight);
+  --color-heading: var(--headingColor);
+  --color-secondary: var(--secondary);
+  --color-subtext: var(--subtextColor);
+  --color-subtextSection: var(--subtextSecColor);
+  --color-supportingGradient: var(--supportingGradientColor);
+  --color-supporting: var(--supportingColor);
+
+  /* special */
+  --color-btn: #1d4ed8;
+  --color-btnHover: #1e40af;
+  --color-btnPressed: #1e3a8a;
+  --color-btnDisabled: #6b7280;
+
+  --font-poppins: var(--font-poppins);
+  --font-roboto: var(--font-roboto);
+  --font-inter: var(--font-inter);
+  --font-outfit: var(--font-outfit);
+
+  --max-width: var(--maxWidth);
+}
+
+.dark {
+  --background: #0f1115;
+  --foreground: #ffffff;
+  --primary: #028cfd;
+  --primaryDark: #018cfa;
+  --primaryLight: #ecf6fe;
+  --secondary: #001a2b;
+  --headingColor: #ffffff;
+  --subtextColor: #b0b0b0;
+  --subtextSecColor: #7a7a7a;
+  --supportingGradientColor: #05a886;
+  --supportingColor: #ffa500;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* globals.css */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: auto;
+}
+
+/* logo animation */
+@keyframes float {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}
+
+.float-animation {
+  animation: float 1s ease-in-out infinite;
+}
+
+/* global.css or tailwind.css */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

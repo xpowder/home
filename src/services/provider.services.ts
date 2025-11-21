@@ -117,14 +117,14 @@ export const uploadProfilePhoto = async (photo: File) => {
 
 /**
  * Upload portfolio image
+ * NOTE: Backend doesn't have a separate endpoint for portfolio images.
+ * Portfolio images should be uploaded as part of complete-provider endpoint.
+ * This function is kept for future use if backend adds this endpoint.
  */
 export const uploadPortfolioImage = async (image: File) => {
-  const formData = new FormData();
-  formData.append("photo", image);
-  const response = await api.post("/profile/upload-photo", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return response.data;
+  // TODO: Backend needs to add a separate endpoint for portfolio images
+  // For now, portfolio images are only uploaded during profile completion
+  throw new Error("Portfolio image upload not yet supported. Use complete-provider endpoint during profile setup.");
 };
 
 /**

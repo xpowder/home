@@ -10,7 +10,7 @@ import Tick from "@/assets/auth/Tick2.svg";
 import AddImage from "@/assets/auth/uploadImage.svg";
 import WhiteTick from "@/assets/auth/whitetick.svg";
 import useCatagory from "@/hooks/useCatagory";
-import useCities from "@/hooks/useCity";
+import useCity from "@/hooks/useCity";
 import { sectionHeading } from "@/utils/fonts";
 
 import Inputlabel from "../components/inputlabel";
@@ -21,8 +21,8 @@ import ProviderTextarea from "../components/providerTextarea";
 import { useProviderProfileForm } from "../hooks/useProviderProfileForm";
 
 export default function Page() {
-  const popularServices = useCatagory();
-  const cityOptions = useCities();
+  const { categories: popularServices } = useCatagory();
+  const { cities: cityOptions } = useCity();
   const {
     profilePhotoRef,
     portfolioRefs,

@@ -10,10 +10,10 @@ import Clock from "@/assets/home/hero/support.svg";
 import Verified from "@/assets/home/hero/verifiedProfessionals.svg";
 import BlueTick from "@/assets/providerDashboard/TickRound.svg";
 import CallWhite from "@/assets/services/CallWhite.svg";
-import MessageBlack from "@/assets/services/MessageBlack.svg";
 import RedFlag from "@/assets/services/RedFlag.svg";
 import WhatsappWhite from "@/assets/services/WhatsappWhite.svg";
 import { Provider } from "@/services/provider.services";
+import MessageButton from "./MessageButton";
 
 interface ServiceProviderInformationProps {
   provider?: Provider;
@@ -166,18 +166,7 @@ export default function ServiceProviderInformation({ provider }: ServiceProvider
         )}
 
         {/* Message button */}
-        <Link
-          href={`/${locale}/messages?provider=${provider.id}`}
-          className="text-subtext font-roboto border-subtext focus:ring-subtext/80 disabled:bg-btnDisabled flex h-[clamp(40px,2vh,48px)] w-full cursor-pointer items-center justify-center gap-2 rounded-lg border text-[clamp(12px,1vw,16px)] font-normal duration-300 hover:-translate-y-px hover:shadow-xl active:shadow-sm disabled:text-[#E5E5E5]"
-          aria-label={`Send a message to ${data.name}`}
-        >
-          <MessageBlack
-            className="h-[clamp(10px,1vw,16px)] min-h-2.5 w-[clamp(10px,1vw,16px)] min-w-2.5"
-            role="img"
-            aria-hidden="true"
-          />
-          {t("message")}
-        </Link>
+        <MessageButton providerId={provider.id} providerName={data.name} locale={locale} />
 
         {/* Report button */}
         <button

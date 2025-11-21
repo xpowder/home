@@ -19,8 +19,8 @@ const priceList = [
 ];
 
 export default function ServicesHero() {
-  const categories = useCatagory();
-  const cities = useCity();
+  const { categories } = useCatagory();
+  const { cities } = useCity();
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,7 +65,7 @@ export default function ServicesHero() {
             {/* Categories Select */}
             <SelectField
               name="category"
-              items={categories}
+              items={categories || []}
               value={selectedCategory}
               onChange={setSelectedCategory}
               placeholder={t("search.category")}
@@ -76,7 +76,7 @@ export default function ServicesHero() {
             {/* Cities Select */}
             <SelectField
               name="city"
-              items={cities}
+              items={cities || []}
               value={selectedCity}
               onChange={setSelectedCity}
               placeholder={t("search.city")}

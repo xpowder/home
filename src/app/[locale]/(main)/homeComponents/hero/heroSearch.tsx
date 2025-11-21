@@ -19,11 +19,15 @@ import useCity, { City } from "@/hooks/useCity";
 
 export default function HeroSearch() {
   const { search, setSearch, loading, fetchData } = useFindService();
-  const categories = useCatagory();
-  const cities = useCity();
+  const { categories, loading: categoriesLoading } = useCatagory();
+  const { cities, loading: citiesLoading } = useCity();
   const t = useTranslations("hero.search");
   const params = useParams();
   const locale = params.locale as string;
+  
+  const isLoading = categoriesLoading || citiesLoading;
+  const categoriesList = categories || [];
+  const citiesList = cities || [];
 
   return (
     <div
@@ -58,15 +62,21 @@ export default function HeroSearch() {
                   shadow-lg
                 "
           >
-            {categories?.map((category) => (
-              <SelectItem
-                key={category.id}
-                value={category.id}
-                className="hover:bg-foreground/10 cursor-pointer"
-              >
-                {(category as Category)[`name_${locale}` as keyof Category]}
-              </SelectItem>
-            ))}
+            {isLoading ? (
+              <div className="p-4 text-center text-sm text-subtext">Loading categories...</div>
+            ) : categoriesList.length === 0 ? (
+              <div className="p-4 text-center text-sm text-subtext">No categories available</div>
+            ) : (
+              categoriesList.map((category) => (
+                <SelectItem
+                  key={category.id}
+                  value={category.id}
+                  className="hover:bg-foreground/10 cursor-pointer"
+                >
+                  {(category as Category)[`name_${locale}` as keyof Category]}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -99,15 +109,21 @@ export default function HeroSearch() {
                   shadow-lg
                 "
           >
-            {cities?.map((city) => (
-              <SelectItem
-                key={city.id}
-                value={city.id}
-                className="hover:bg-foreground/10 cursor-pointer"
-              >
-                {(city as City)[`name_${locale}` as keyof City]}
-              </SelectItem>
-            ))}
+            {isLoading ? (
+              <div className="p-4 text-center text-sm text-subtext">Loading cities...</div>
+            ) : citiesList.length === 0 ? (
+              <div className="p-4 text-center text-sm text-subtext">No cities available</div>
+            ) : (
+              citiesList.map((city) => (
+                <SelectItem
+                  key={city.id}
+                  value={city.id}
+                  className="hover:bg-foreground/10 cursor-pointer"
+                >
+                  {(city as City)[`name_${locale}` as keyof City]}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>

@@ -76,3 +76,23 @@ export const fetchProfile = async () => {
   const response = await api.get("/auth/profile");
   return response;
 };
+
+/**
+ * Update user profile (first_name, last_name, phone)
+ */
+export const updateUserProfile = async (data: {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+}) => {
+  const response = await api.put("/auth/profile-update", data);
+  return response.data;
+};
+
+/**
+ * Delete user account
+ */
+export const deleteAccount = async () => {
+  const response = await api.delete("/auth/delete-account");
+  return response.data;
+};

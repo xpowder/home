@@ -3,36 +3,39 @@ import api from "@/lib/apiClient";
 export interface Conversation {
   id: string;
   provider_id: string;
-  provider_name?: string;
-  provider_image?: string;
+  provider_name: string;
+  provider_email: string;
   client_id: string;
-  client_name?: string;
-  client_image?: string;
+  client_name: string;
+  client_email: string;
   subject?: string;
-  last_message?: {
-    content: string;
-    created_at: string;
-    sender_id: string;
-  };
+  last_message?: string; // Backend returns string preview, not object
+  last_message_at?: string;
   unread_count: number;
-  is_muted: boolean;
-  is_archived: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
+  // Frontend computed fields
+  provider_image?: string;
+  client_image?: string;
+  is_muted?: boolean;
+  is_archived?: boolean;
 }
 
 export interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
-  sender_name?: string;
-  sender_image?: string;
+  sender_name: string;
+  sender_role: string;
   content: string;
-  attachment?: string;
+  attachment_url?: string;
   attachment_type?: string;
   is_read: boolean;
   created_at: string;
-  updated_at: string;
+  read_at?: string;
+  // Frontend computed fields
+  sender_image?: string;
 }
 
 export interface ConversationListResponse {
@@ -114,7 +117,9 @@ export const sendMessage = async (data: SendMessageData) => {
   }
 
   const response = await api.post<Message>("/messages/messages", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
   return response.data;
 };

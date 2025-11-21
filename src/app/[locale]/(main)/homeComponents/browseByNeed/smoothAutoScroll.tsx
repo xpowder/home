@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-import { useCatagory } from "@/hooks/useCatagory";
+import useCatagory from "@/hooks/useCatagory";
 import { cardParagraph } from "@/utils/fonts";
 
 export default function SmoothAutoScroll() {

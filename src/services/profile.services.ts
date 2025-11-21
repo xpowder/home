@@ -20,6 +20,9 @@ export interface ProfileData {
   starting_price_mad?: number;
   full_address?: string;
   is_active_provider: boolean;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
 }
 
 export interface PortfolioImage {

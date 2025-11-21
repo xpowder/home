@@ -74,7 +74,20 @@ export default function Profile() {
   const fetchUserData = async () => {
     try {
       const res = await getMyProfile();
-      logger.info("Fetched user profile data:", res.data);
+      logger.info("Fetched user profile data:", res);
+      // Update userData with fetched profile data
+      if (res.user) {
+        setUserData((prev) => ({
+          ...prev,
+          fullName: res.user.service_title || `${res.user.first_name || ""} ${res.user.last_name || ""}`.trim() || "Provider",
+          profession: res.user.service_category?.en || res.user.service_category?.fr || res.user.service_category?.ar || "Service Provider",
+          city: res.user.city?.en || res.user.city?.fr || res.user.city?.ar || "Location",
+          bio: res.user.bio || "",
+          experience: res.user.years_experience ? `${res.user.years_experience} years` : "0 years",
+          phone: res.user.phone || "",
+          email: res.user.email || "",
+        }));
+      }
     } catch (error) {
       logger.error("Error fetching user profile data:", error);
     }

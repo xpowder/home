@@ -19,18 +19,23 @@ export default function AuthButtons({
 }: AuthButtonsProps) {
   const t = useTranslations("auth.authButtons");
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
+      {/* Role Selection Tabs */}
       <div
-        className="dark:bg-primary flex h-16 w-full items-center justify-between gap-2 rounded-md bg-[#F3F4F6] px-1 shadow-md"
+        className="flex h-12 w-full items-center justify-between gap-2 rounded-lg bg-[#F3F4F6] p-1"
         role="group"
         aria-label="Select account type"
       >
         <button
+          type="button"
           aria-pressed={continueAs === "client"}
           onClick={() => setContinueAs("client")}
-          className={`font-roboto text-heading flex h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 text-[clamp(10px,1vw,12px)] font-medium transition-colors duration-300
-                    ${continueAs === "client" ? "dark:bg-secondary/50 bg-white" : "bg-transparent"}
-                
+          className={`font-roboto flex h-full w-full cursor-pointer items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-all duration-200
+                    ${
+                      continueAs === "client"
+                        ? "bg-white text-heading shadow-sm"
+                        : "bg-transparent text-gray-600"
+                    }
                 `}
         >
           <User className="h-4 w-4" />
@@ -38,40 +43,56 @@ export default function AuthButtons({
         </button>
 
         <button
+          type="button"
           aria-pressed={continueAs === "provider"}
           onClick={() => setContinueAs("provider")}
-          className={`font-roboto text-heading flex h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 text-[clamp(10px,1vw,12px)] font-medium transition-colors duration-300
-                    ${continueAs === "client" ? "bg-transparent" : "dark:bg-secondary/50 bg-white"}
+          className={`font-roboto flex h-full w-full cursor-pointer items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-all duration-200
+                    ${
+                      continueAs === "provider"
+                        ? "bg-white text-heading shadow-sm"
+                        : "bg-transparent text-gray-600"
+                    }
                 `}
         >
           <Provider className="h-4 w-4" />
           {t("Continue as Provider")}
         </button>
       </div>
+      
+      {/* Auth Mode Tabs */}
       <div
-        className="w-dull dark:bg-secondary flex h-12 items-center justify-between gap-2 rounded-md bg-[#F3F4F6] px-1 shadow-md"
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-lg bg-[#F3F4F6] p-1"
         role="group"
         aria-label="Select authentication action"
       >
         <button
+          type="button"
           aria-pressed={operation === "login"}
           onClick={() => setOperation("login")}
-          className={`font-roboto text-heading flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 text-[clamp(10px,1vw,12px)] font-medium transition-colors duration-300
-                    ${operation === "login" ? "dark:bg-primaryDark/50 bg-white" : "bg-transparent"}
-                
+          className={`font-roboto flex h-full w-full cursor-pointer items-center justify-center rounded-md px-4 text-sm font-medium transition-all duration-200
+                    ${
+                      operation === "login"
+                        ? "bg-white text-heading shadow-sm"
+                        : "bg-transparent text-gray-600"
+                    }
                 `}
         >
-          {t("login")}
+          Login
         </button>
 
         <button
+          type="button"
           aria-pressed={operation === "sign up"}
           onClick={() => setOperation("sign up")}
-          className={`font-roboto text-heading flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-md px-4 py-2 text-[clamp(10px,1vw,12px)] font-medium transition-colors duration-300
-                    ${operation === "sign up" ? "dark:bg-primaryDark/50 bg-white" : "bg-transparent"}
+          className={`font-roboto flex h-full w-full cursor-pointer items-center justify-center rounded-md px-4 text-sm font-medium transition-all duration-200
+                    ${
+                      operation === "sign up"
+                        ? "bg-white text-heading shadow-sm"
+                        : "bg-transparent text-gray-600"
+                    }
                 `}
         >
-          {t("sign up")}
+          Sign Up
         </button>
       </div>
     </div>

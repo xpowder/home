@@ -153,11 +153,11 @@ export default function GoogleOAuthButton({ role }: Props) {
       >
         {loading ? (
           <div className="flex items-center justify-center gap-3">
-            <Google className="h-6 w-6" aria-hidden="true" /> {t("continuingWithGoogle")}
+            <Google className="h-6 w-6" aria-hidden="true" /> Continuing with Google
           </div>
         ) : (
           <div className="flex items-center justify-center gap-3">
-            <Google className="h-6 w-6" aria-hidden="true" /> {t("continueWithGoogle")}
+            <Google className="h-6 w-6" aria-hidden="true" /> Continue with Google
           </div>
         )}
       </button>

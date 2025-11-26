@@ -190,7 +190,7 @@ export default function EditProfileModal({
       // Extract years from experience string (e.g., "5 years" -> 5)
       const yearsExperience = data.experience 
         ? (() => {
-            const yearsMatch = data.experience.match(/(\d+)/);
+      const yearsMatch = data.experience.match(/(\d+)/);
             return yearsMatch ? parseInt(yearsMatch[1]) : undefined;
           })()
         : undefined;
@@ -251,7 +251,7 @@ export default function EditProfileModal({
       // Upload service photo if changed
       if (data.serviceImage && data.serviceImage instanceof File) {
         try {
-          await uploadServicePhoto(data.serviceImage);
+        await uploadServicePhoto(data.serviceImage);
           logger.info("Service photo uploaded successfully");
         } catch (photoError) {
           logger.error("Error uploading service photo:", photoError);

@@ -9,26 +9,40 @@ import Hammer from "@/assets/home/hero/Hammer.svg";
 export default function ProviderAuthDecor() {
   const t = useTranslations("auth.providerDecorator");
   return (
-    <div className="relative aspect-[.8] w-[70%] min-w-[340px]  max-w-[500px] overflow-visible rounded-[60px] border border-white/20 bg-white/20">
-      <div className="absolute left-[-30px] right-auto top-[70%]  flex h-16 w-16 items-center justify-center rounded-full bg-white rtl:left-auto rtl:right-[-30px]">
-        <Hammer className="h-8 w-8" />
-      </div>
+    <div className="relative flex w-full max-w-[600px] items-center justify-center px-8">
+      {/* Promotional Card */}
+      <div className="relative w-full max-w-[500px] rounded-[40px] bg-white/10 backdrop-blur-sm p-6 sm:p-8 lg:p-10">
+        {/* Content Container - Text and Image Side by Side */}
+        <div className="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+          {/* Text Content */}
+          <div className="relative z-10 flex-1 space-y-3 lg:space-y-4">
+            <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight text-white">
+              {t("heading")}
+            </h2>
+            <p className="font-roboto text-sm sm:text-base lg:text-lg font-normal text-white/90">
+              {t("paragraph")}
+            </p>
+          </div>
 
-      <Image
-        src={ProviderAuthImage}
-        alt="authImage"
-        fill
-        sizes="(max-width: 768px) 70vw, 500px"
-        className="ml-[15%] mr-0 object-contain rtl:ml-0 rtl:mr-[15%] rtl:scale-x-[-1]"
-      />
+          {/* Provider Image - Positioned to the right */}
+          <div className="relative h-[250px] w-full flex-shrink-0 sm:h-[280px] lg:h-[320px] lg:w-[200px]">
+            <Image
+              src={ProviderAuthImage}
+              alt="Provider"
+              fill
+              sizes="(max-width: 1024px) 100vw, 200px"
+              className="object-contain object-right"
+              priority
+            />
+          </div>
+        </div>
 
-      <div className="relative z-10 space-y-2 p-10">
-        <h2 className="font-poppins w-[60%] text-[calc(12px+1vw)] font-bold text-white">
-          {t("heading")}
-        </h2>
-        <p className="font-roboto w-[50%] text-[calc(10px+0.5vw)] font-normal text-white">
-          {t("paragraph")}
-        </p>
+        {/* Icon Below - Centered */}
+        <div className="mt-6 flex justify-center lg:mt-8">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white sm:h-16 sm:w-16">
+            <Hammer className="h-7 w-7 text-primary sm:h-8 sm:w-8" />
+          </div>
+        </div>
       </div>
     </div>
   );

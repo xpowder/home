@@ -1,1 +1,4 @@
-{}
+{
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/[locale]/(auth)/auth/page": "app/[locale]/(auth)/auth/page.js"
+}

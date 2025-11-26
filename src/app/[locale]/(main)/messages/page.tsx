@@ -61,9 +61,9 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] w-full overflow-hidden bg-white">
+    <div className="flex h-[calc(100vh-8vh)] w-full flex-col overflow-hidden bg-white dark:bg-gray-900 md:flex-row">
       {/* Left Column - Conversation List */}
-      <div className="flex w-full flex-shrink-0 flex-col border-r border-gray-200 md:w-[350px]">
+      <div className="flex w-full flex-shrink-0 flex-col border-b border-gray-200 dark:border-gray-700 md:w-[320px] md:border-b-0 md:border-r lg:w-[350px]">
         <ConversationList
           conversations={conversations}
           selectedConversationId={selectedConversation?.id}
@@ -80,9 +80,9 @@ export default function MessagesPage() {
             onNewMessage={handleNewMessage}
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-gray-50">
+          <div className="flex h-full items-center justify-center bg-gray-50 dark:bg-gray-800">
             <div className="text-center">
-              <p className="text-subtext text-lg">Select a conversation to start messaging</p>
+              <p className="text-subtext dark:text-gray-400 text-lg">Select a conversation to start messaging</p>
             </div>
           </div>
         )}
@@ -90,7 +90,7 @@ export default function MessagesPage() {
 
       {/* Right Column - Provider Profile Sidebar */}
       {selectedConversation && (
-        <div className="hidden w-[350px] flex-shrink-0 border-l border-gray-200 lg:block">
+        <div className="hidden w-[350px] flex-shrink-0 border-l border-gray-200 dark:border-gray-700 lg:block">
           <ProviderProfileSidebar conversation={selectedConversation} />
         </div>
       )}

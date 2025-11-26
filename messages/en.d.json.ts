@@ -13,10 +13,14 @@ declare const messages: {
     "inactive": "inactive",
     "myProfile": "My Profile",
     "editProfile": "Edit Profile",
+    "accountSettings": "Account Settings",
+    "notifications": "Notifications",
+    "security": "Security",
+    "helpCenter": "Help Center",
     "services": "My Services",
     "account": "Account Settings",
     "help": "Help & Support",
-    "logout": "LogOut"
+    "logout": "Logout"
   },
   "nav": {
     "home": "Home",
@@ -265,6 +269,82 @@ declare const messages: {
       "termsOfService": "Terms of Service"
     }
   },
+  "privacyPolicy": {
+    "title": "Privacy Policy",
+    "subtitle": "At Homezup, your privacy is a priority. Here's how we handle your data with care and transparency.",
+    "effectiveDate": "Effective from July 2025",
+    "sections": {
+      "whatWeCollect": {
+        "title": "What Information We Collect",
+        "users": {
+          "title": "Users",
+          "items": [
+            "Device & browser data",
+            "Name and email"
+          ]
+        },
+        "providers": {
+          "title": "Providers",
+          "items": [
+            "Full name, phone, city",
+            "Services offered",
+            "Profile photo",
+            "Optional ID docs"
+          ]
+        },
+        "warning": "⚠️ We don't store or process payments."
+      },
+      "howWeUse": {
+        "title": "How We Use Your Data",
+        "items": [
+          "Match users with relevant providers",
+          "Power listings and reviews",
+          "Respond to support queries",
+          "Showcase provider verification"
+        ],
+        "assurance": "🔒 We never sell or rent your data."
+      },
+      "communication": {
+        "title": "Communication",
+        "description": "Homezup may contact you via email or WhatsApp for service-related updates, booking confirmations, and important notifications.",
+        "newsletter": "We only send newsletters if you've subscribed. You can manage your preferences in your account settings.",
+        "unsubscribe": "You can unsubscribe from marketing emails at any time by clicking the unsubscribe link in any email or contacting us directly."
+      },
+      "cookies": {
+        "title": "Cookies",
+        "description": "We use cookies to personalize your experience, analyze site traffic, and improve our services. You can manage cookie preferences in your browser settings.",
+        "linkText": "View our Cookies Policy"
+      },
+      "dataSecurity": {
+        "title": "Data Security",
+        "description": "Strong safeguards in place",
+        "note": "Note: No platform can guarantee 100% security - but we do our best."
+      },
+      "yourRights": {
+        "title": "Your Rights",
+        "items": [
+          "Request a copy of data",
+          "Correct or delete profile info",
+          "Deactivate account"
+        ],
+        "contact": "To exercise these rights, contact us at:"
+      },
+      "externalServices": {
+        "title": "External Services",
+        "description": "We may link to third-party tools (e.g., WhatsApp, Google Maps) to enhance your experience.",
+        "clarification": "Homezup doesn't control their data policies - please review their privacy practices separately."
+      },
+      "policyUpdates": {
+        "title": "Policy Updates",
+        "description": "This policy may be updated from time to time. New versions will be published on this page with an updated effective date."
+      },
+      "contactUs": {
+        "title": "Contact Us",
+        "description": "Questions about cookies or privacy?",
+        "email": "Email us at:"
+      }
+    }
+  },
   "auth": {
     "authButtons": {
       "login": "Log in",
@@ -478,6 +558,32 @@ declare const messages: {
       "relatedServices": "You Might Also Like"
     }
   },
+  "browseProviders": {
+    "hero": {
+      "title": "Top-Rated Providers Near You",
+      "description": "Find trusted professionals for your home — rated by real customers.",
+      "findExperts": "Find Experts",
+      "filters": {
+        "category": "All Categories",
+        "city": "Select City",
+        "priceRange": "Price Range",
+        "minimumRating": "Minimum Rating"
+      }
+    },
+    "topRated": {
+      "title": "Top Rated Providers",
+      "viewAll": "View All",
+      "noProviders": "No top rated providers found"
+    },
+    "allProviders": {
+      "title": "All Providers",
+      "verifiedOnly": "Verified Only",
+      "sortBy": "Newest First",
+      "loading": "Loading providers...",
+      "noProviders": "No providers found",
+      "tryAdjusting": "Try adjusting your filters or search criteria."
+    }
+  },
   "status": {
     "loading": {
       "title": "Hang tight, we're loading your experience...",
@@ -583,7 +689,8 @@ declare const messages: {
           "serviceArea": "Service Coverage Area",
           "serviceAreaPlaceholder": "e.g. Within 20km of city center",
           "experience": "Years of Experience",
-          "experiencePlaceholder": "e.g. 5"
+          "experiencePlaceholder": "e.g. 5",
+          "startingPricePlaceholder": "Enter your starting price"
         },
         "languages": {
           "label": "Languages Spoken",
@@ -611,7 +718,8 @@ declare const messages: {
       },
       "buttons": {
         "cancel": "Cancel",
-        "saveChanges": "Save Changes"
+        "saveChanges": "Save Changes",
+        "saving": "Saving..."
       },
       "validation": {
         "imageFormatCorrect": "Image format is correct"

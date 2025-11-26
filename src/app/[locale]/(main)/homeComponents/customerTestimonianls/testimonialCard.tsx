@@ -36,6 +36,7 @@ export default function TestimonialCard({
             src={img}
             alt={`Image of ${name}`}
             fill
+            sizes="50px"
             className="rounded-full object-cover"
             priority
           />

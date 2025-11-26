@@ -2,37 +2,44 @@
 import * as z from "zod";
 
 export const editProfileSchema = z.object({
+  // Optional fields
   profileImage: z
     .union([z.instanceof(File), z.string()])
     .nullable()
-    .refine(
-      (file) => file !== null && (file instanceof File || typeof file === "string"),
-      "Please upload a profile photo"
-    ),
+    .optional(),
 
-  fullName: z.string().min(2, "Full name is required"),
-  profession: z.string().min(1, "Profession is required"),
-  bio: z.string().min(10, "Please provide a short bio"),
-  city: z.string().min(1, "City is required"),
-  serviceArea: z.string().optional(),
-  experience: z.string().min(1, "Experience is required"),
-  languages: z.array(z.string()).min(1, "Select at least one language"),
-  phone: z.string().min(5, "Phone number required"),
-  whatsapp: z.string().optional(),
-  email: z.string().email("Enter a valid email"),
+  fullName: z.string().optional().or(z.literal("")),
+  
+  // REQUIRED: Profession/Category
+  profession: z.string().min(1, "Profession / Category is required"),
+  
+  bio: z.string().optional().or(z.literal("")),
+  
+  // REQUIRED: City
+  city: z.string().min(1, "City / Location is required"),
+  
+  serviceArea: z.string().optional().or(z.literal("")),
+  experience: z.string().optional().or(z.literal("")),
+  startingPrice: z.number().min(0, "Starting price must be 0 or greater").optional(),
+  languages: z.array(z.string()).optional(),
+  phone: z.string().optional().or(z.literal("")),
+  whatsapp: z.string().optional().or(z.literal("")),
+  email: z
+    .union([
+      z.string().email("Enter a valid email"),
+      z.literal(""),
+    ])
+    .optional(),
 
   serviceImage: z
     .union([z.instanceof(File), z.string()])
     .nullable()
-    .refine(
-      (file) => file !== null && (file instanceof File || typeof file === "string"),
-      "Please upload a service or work photo"
-    ),
+    .optional(),
 
   portfolioImages: z
     .array(z.union([z.instanceof(File), z.string()]).nullable())
-    .min(0, "Add at least one image")
-    .max(3, "You can upload up to 3 images"),
+    .max(3, "You can upload up to 3 images")
+    .optional(),
 });
 
 export type EditProfileFormType = z.infer<typeof editProfileSchema>;

@@ -2,13 +2,14 @@
 
 import { type CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 
 import Google from "@/assets/auth/google.svg";
 import { logger } from "@/lib/logger";
 import { secureStorage } from "@/lib/secureStorage";
+import { getMyProfile, getProfileCompletionStatus } from "@/services/profile.services";
 import { loginWithGoogle } from "@/services/auth.services";
 // -------------------- Backend Response Interfaces --------------------
 
@@ -47,6 +48,8 @@ interface Props {
 
 export default function GoogleOAuthButton({ role }: Props) {
   const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const t = useTranslations("auth.login");
@@ -72,7 +75,56 @@ export default function GoogleOAuthButton({ role }: Props) {
             await secureStorage.set("accessToken", response.data.access_token);
             await secureStorage.set("refreshToken", response.data.refresh_token);
 
-            router.push(response.data.role === "provider" ? "/complete-provider" : "/");
+            // Dispatch event to notify AuthContext to refresh profile
+            window.dispatchEvent(new Event("auth:tokenSet"));
+
+            // Small delay to allow AuthContext to fetch profile
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            // Check for return URL in query params
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnUrl = urlParams.get("returnUrl");
+            
+            // If there's a return URL, go there; otherwise determine redirect based on role
+            if (returnUrl) {
+              router.push(decodeURIComponent(returnUrl));
+            } else if (response.data.role === "provider") {
+              // For providers, check if they have completed profile or have services
+              try {
+                // Fetch profile to check completion status
+                const profileResponse = await getMyProfile();
+                const profile = profileResponse.user;
+                
+                // Check if provider has completed profile (has service_category and service_title)
+                const hasService = !!(profile.service_category && profile.service_title);
+                
+                // Check profile completion percentage
+                let isProfileComplete = false;
+                try {
+                  const completionResponse = await getProfileCompletionStatus();
+                  const completionPercentage = completionResponse.profile_completion?.completion_percentage || 0;
+                  // Consider profile complete if at least 80% complete
+                  isProfileComplete = completionPercentage >= 80;
+                } catch (error) {
+                  // If we can't fetch completion status, fall back to checking key fields
+                  isProfileComplete = hasService && !!(profile.city && profile.bio);
+                }
+                
+                // Redirect to dashboard if profile is complete OR has a service, otherwise to complete-provider
+                if (isProfileComplete || hasService) {
+                  router.push(`/${locale}/providers-dashboard`);
+                } else {
+                  router.push(`/${locale}/complete-provider`);
+                }
+              } catch (error) {
+                // If profile fetch fails, redirect to complete-provider to be safe
+                logger.error("Error checking provider profile:", error);
+                router.push(`/${locale}/complete-provider`);
+              }
+            } else {
+              // For clients, go to homepage
+              router.push(`/${locale}`);
+            }
           } else {
             // Error branch (400 / 500)
             logger.error("Auth failed:", response.data.message, response.data.errors);
@@ -87,7 +139,7 @@ export default function GoogleOAuthButton({ role }: Props) {
         }
       })();
     },
-    [role, router]
+    [role, router, locale]
   );
 
   return (

@@ -9,6 +9,32 @@ const withNextIntl = createNextIntlPlugin({
 });
 
 const baseConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "backend-homezup-production.up.railway.app",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "s3.us-west-002.backblazeb2.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "8000",
+        pathname: "/**",
+      },
+    ],
+  },
   webpack(config, { dev, isServer }) {
     // ----------------------------
     // ✅ 1. Remove console logs in production (browser only)
@@ -60,6 +86,17 @@ const baseConfig: NextConfig = {
 
   experimental: {
     optimizeCss: false,
+  },
+  
+  // Ensure proper build output
+  output: undefined, // Let Next.js decide based on usage
+  
+  // Improve build stability
+  onDemandEntries: {
+    // Period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 25 * 1000,
+    // Number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 2,
   },
 };
 

@@ -27,6 +27,7 @@ export const useEditProfileForm = (defaultValues?: Partial<EditProfileFormType>)
       city: "",
       serviceArea: "",
       experience: "",
+      startingPrice: undefined,
       languages: [],
       phone: "",
       whatsapp: "",

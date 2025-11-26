@@ -15,8 +15,9 @@ export default async function RootLayout({ children }: Props) {
     <html
       lang="en"
       className={`${poppins.variable} ${roboto.variable} ${outfit.variable} ${inter.variable}`}
+      suppressHydrationWarning
     >
-      <body>{children}</body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

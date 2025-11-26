@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import React from "react";
 
@@ -10,6 +11,8 @@ import PasswordInput from "./passwordInpout";
 import TextInput from "./textInput";
 
 export default function SignUpForm({ role }: { role: "client" | "provider" }) {
+  const params = useParams();
+  const locale = params.locale as string;
   const { register, errors, dirtyFields, isSubmitting, onSubmit, formError } = useSignUpForm(role);
   const t = useTranslations("auth.signup");
 
@@ -77,7 +80,7 @@ export default function SignUpForm({ role }: { role: "client" | "provider" }) {
               {t("terms")}
             </Link>
             <span>{t("and")}</span>
-            <Link className="text-primary" href="/">
+            <Link className="text-primary" href={`/${locale}/privacy-policy`}>
               {t("privacy")}
             </Link>
           </span>

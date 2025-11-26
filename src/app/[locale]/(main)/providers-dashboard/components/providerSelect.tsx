@@ -10,11 +10,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface SelectOption {
+  value: string;
+  label: string;
+}
+
 interface ProviderSelectProps {
   label: string;
   info?: string;
   placeholder?: string;
-  options: string[];
+  options: string[] | SelectOption[];
   register?: UseFormRegisterReturn;
   error?: FieldError;
   dirty?: boolean;
@@ -63,11 +68,15 @@ export default function ProviderSelect({
             />
           </SelectTrigger>
           <SelectContent className="bg-background text-foreground h-50 border-none">
-            {options.map((option) => (
-              <SelectItem key={option} value={option} className="hover:bg-foreground/30">
-                {option}
-              </SelectItem>
-            ))}
+            {options.map((option) => {
+              const optionValue = typeof option === "string" ? option : option.value;
+              const optionLabel = typeof option === "string" ? option : option.label;
+              return (
+                <SelectItem key={optionValue} value={optionValue} className="hover:bg-foreground/30">
+                  {optionLabel}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       </div>

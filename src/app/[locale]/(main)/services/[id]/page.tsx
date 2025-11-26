@@ -79,7 +79,7 @@ export default function ProviderDetailsPage() {
 
   return (
     <section className="bg-secondary/30 pt-3">
-      <Breadcrumb />
+      <Breadcrumb provider={provider} />
       <div className="container space-y-5 p-5">
         <ServiceDetailsHead data={serviceData} />
         <ServiceDetailsCarosel provider={provider} />

@@ -34,6 +34,13 @@ api.interceptors.request.use(
       const token = await secureStorage.get("accessToken");
       if (token) config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // For FormData requests, let axios set Content-Type automatically with boundary
+    // Don't override it if it's FormData
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
+    
     return config;
   },
   (error) => Promise.reject(error)

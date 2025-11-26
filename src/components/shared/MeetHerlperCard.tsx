@@ -27,6 +27,7 @@ export default function MeetHelperCard({ data }: MeetHelperCardProps) {
           src={data.img}
           alt={`Image of Service Provider ${data.name}`}
           fill
+          sizes="(max-width: 768px) 200px, (max-width: 1200px) 20vw, 258px"
           className="rounded-t-xl object-cover "
           priority
         />

@@ -31,6 +31,7 @@ export default function LatestOfferCard({ data, isLikeButton = true }: LatestOff
           src={data.img}
           alt={`Latest Offer Image of ${data.serviceName}`}
           fill
+          sizes="(max-width: 768px) 241px, (max-width: 1200px) 25vw, 324px"
           className="rounded-t-xl object-cover "
           priority
         />
@@ -46,6 +47,7 @@ export default function LatestOfferCard({ data, isLikeButton = true }: LatestOff
               src={data.avatar}
               alt={`Latest Offer Provider ${data.name} Image`}
               fill
+              sizes="50px"
               className="rounded-full object-cover"
             />
           </div>

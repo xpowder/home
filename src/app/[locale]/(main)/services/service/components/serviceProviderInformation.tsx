@@ -56,6 +56,7 @@ export default function ServiceProviderInformation({ provider }: ServiceProvider
             src={data.image}
             alt={`Profile picture of ${data.name}`}
             fill
+            sizes="80px"
             className="object-cover"
             priority
             fetchPriority="high"

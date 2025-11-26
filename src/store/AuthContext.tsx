@@ -69,8 +69,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     })();
 
+    // Listen for storage changes (when tokens are set after login)
+    const handleStorageChange = async (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.ACCESS_TOKEN && e.newValue) {
+        // Token was added/updated, refresh profile
+        logger.info("Access token detected, refreshing profile...");
+        await fetchAndCacheProfile({ silent: true });
+      } else if (e.key === STORAGE_KEYS.ACCESS_TOKEN && !e.newValue) {
+        // Token was removed, clear user
+        if (mountedRef.current) setUser(null);
+      }
+    };
+
+    // Listen for custom event when tokens are set (for same-tab login)
+    const handleTokenSet = async () => {
+      logger.info("Token set event detected, refreshing profile...");
+      await fetchAndCacheProfile({ silent: true });
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("auth:tokenSet", handleTokenSet);
+
     return () => {
       mountedRef.current = false;
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("auth:tokenSet", handleTokenSet);
     };
   }, []);
 

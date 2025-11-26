@@ -27,18 +27,18 @@ export default function HeroTexts() {
   return (
     <div
       ref={textDivRef}
-      className="z-13 my-5 flex max-h-[80vh] w-full flex-col items-center justify-center p-[5%] text-center md:items-start  md:pl-[10%]  md:text-start"
+      className="z-13 flex max-h-[80vh] w-full flex-col items-center justify-center px-4 py-6 text-center sm:px-6 sm:py-8 md:items-start md:px-8 md:text-start lg:pl-[10%]"
       aria-label="Hero section for finding trusted home service providers"
     >
-      <h1 className={`${heroHeading} text-heading mb-5`}>{t("heading")}</h1>
+      <h1 className={`${heroHeading} text-heading mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl`}>{t("heading")}</h1>
 
-      <p className={`${heroParagraph} text-subtext mb-5`}>{t("paragraph")}</p>
+      <p className={`${heroParagraph} text-subtext mb-6 text-sm sm:text-base md:text-lg`}>{t("paragraph")}</p>
 
       {/* Search Box */}
       <HeroSearch />
 
       {/* Feature Icons */}
-      <div className="mt-20">
+      <div className="mt-12 sm:mt-16 md:mt-20">
         <HeroFeatures />
       </div>
     </div>

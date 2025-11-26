@@ -7,15 +7,15 @@ import { OfferListType } from "@/types/home/offerListType"; //Type of Offer Card
 export const navLinks = [
   {
     name: "Home",
-    link: "#",
+    link: "/",
   },
   {
     name: "Services",
-    link: "#",
+    link: "/services",
   },
   {
     name: "browse",
-    link: "#",
+    link: "/browse-providers",
   },
   {
     name: "contact",
@@ -415,7 +415,7 @@ export const footerLinks = [
       { labelKey: "footer.aboutHomezup.aboutUs", href: "/" },
       { labelKey: "footer.aboutHomezup.contactUs", href: "/" },
       { labelKey: "footer.aboutHomezup.cookiesPolicy", href: "/" },
-      { labelKey: "footer.aboutHomezup.privacyPolicy", href: "/" },
+      { labelKey: "footer.aboutHomezup.privacyPolicy", href: "/privacy-policy" },
       { labelKey: "footer.aboutHomezup.termsOfService", href: "/" },
     ],
   },

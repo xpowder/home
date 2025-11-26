@@ -18,6 +18,7 @@ export default function ProviderAuthDecor() {
         src={ProviderAuthImage}
         alt="authImage"
         fill
+        sizes="(max-width: 768px) 70vw, 500px"
         className="ml-[15%] mr-0 object-contain rtl:ml-0 rtl:mr-[15%] rtl:scale-x-[-1]"
       />
 

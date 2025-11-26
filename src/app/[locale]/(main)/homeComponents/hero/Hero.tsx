@@ -18,17 +18,17 @@ export default function Hero() {
   return (
     <section
       id="Hero"
-      className="bg-secondary relative max-h-[700px] min-h-[400px] w-full overflow-hidden md:h-[60vh]"
+      className="bg-secondary relative min-h-[500px] sm:min-h-[550px] md:min-h-[600px] w-full overflow-hidden md:h-[60vh] lg:max-h-[700px]"
       role="region"
       aria-label="Hero section"
     >
       <div
         style={{ opacity: mounted ? 1 : 0 }}
-        className={`container grid grid-cols-1  ${locale === "fr" ? "md:grid-cols-[70%_30%] lg:grid-cols-[60%_40%]" : "md:grid-cols-[60%_40%] lg:grid-cols-[50%_50%]"} h-full w-full`}
+        className={`container mx-auto grid grid-cols-1 h-full w-full px-4 sm:px-6 lg:px-8 ${locale === "fr" ? "md:grid-cols-[70%_30%] lg:grid-cols-[60%_40%]" : "md:grid-cols-[60%_40%] lg:grid-cols-[50%_50%]"} max-w-7xl`}
       >
         {/* Left text column */}
         <div
-          className="z-20 flex items-center justify-center px-0 md:px-4"
+          className="z-20 flex items-center justify-center py-8 sm:py-10 md:py-12 md:px-4"
           role="region"
           aria-label="Hero text content"
         >
@@ -37,7 +37,7 @@ export default function Hero() {
 
         {/* Right image column */}
         <div
-          className={`relative hidden  w-full items-center  justify-start md:flex`}
+          className={`relative hidden w-full items-center justify-start md:flex`}
           role="region"
           aria-label="Hero image"
         >

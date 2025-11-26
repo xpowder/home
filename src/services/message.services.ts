@@ -64,9 +64,11 @@ export interface SendMessageData {
 
 /**
  * Create or get a conversation
+ * Backend returns ConversationResponse directly (not wrapped)
  */
-export const createConversation = async (data: CreateConversationData) => {
+export const createConversation = async (data: CreateConversationData): Promise<Conversation> => {
   const response = await api.post<Conversation>("/messages/conversations", data);
+  // Backend returns the conversation object directly
   return response.data;
 };
 
@@ -111,17 +113,109 @@ export const getMessages = async (
 export const sendMessage = async (data: SendMessageData) => {
   const formData = new FormData();
   formData.append("conversation_id", data.conversation_id);
-  formData.append("content", data.content);
+  
+  // Backend requires content to be non-empty (min_length=1) and will strip whitespace
+  // Ensure we always send a non-empty content string
+  const contentToSend = (data.content && data.content.trim()) 
+    ? data.content.trim() 
+    : (data.attachment ? "📎 Attachment" : "Message");
+  
+  // Validate content length (backend max is 5000)
+  if (contentToSend.length > 5000) {
+    throw new Error("Message content cannot exceed 5000 characters");
+  }
+  
+  if (contentToSend.length === 0) {
+    throw new Error("Message content cannot be empty");
+  }
+  
+  formData.append("content", contentToSend);
+  
   if (data.attachment) {
     formData.append("attachment", data.attachment);
   }
 
-  const response = await api.post<Message>("/messages/messages", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response.data;
+    // Validate conversation_id is a valid UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(data.conversation_id)) {
+      throw new Error("Invalid conversation ID format");
+    }
+
+    // Log FormData contents for debugging
+    console.log("Sending message with FormData:", {
+      conversation_id: data.conversation_id,
+      originalContent: data.content,
+      contentToSend: contentToSend,
+      contentLength: contentToSend.length,
+      hasAttachment: !!data.attachment,
+      attachmentName: data.attachment?.name,
+      attachmentSize: data.attachment?.size,
+      attachmentType: data.attachment?.type,
+    });
+    
+    // Log actual FormData entries (for debugging)
+    if (typeof FormData !== 'undefined') {
+      const formDataEntries: Record<string, any> = {};
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          formDataEntries[key] = {
+            name: value.name,
+            size: value.size,
+            type: value.type,
+          };
+        } else {
+          formDataEntries[key] = value;
+        }
+      }
+      console.log("FormData entries:", formDataEntries);
+    }
+
+  try {
+    // Don't set Content-Type header manually - axios will set it automatically with boundary
+    // for FormData requests
+    const response = await api.post<Message>("/messages/messages", formData);
+    console.log("Message sent successfully:", response.data);
+    return response.data;
+  } catch (error: any) {
+    // Log detailed error information
+    const errorResponse = error?.response;
+    const errorData = errorResponse?.data;
+    
+    console.error("Send message error:", {
+      status: errorResponse?.status,
+      statusText: errorResponse?.statusText,
+      data: errorData,
+      message: error?.message,
+      contentSent: contentToSend,
+      contentLength: contentToSend.length,
+      hasAttachment: !!data.attachment,
+    });
+    
+    // Extract error message from backend response
+    let errorMessage = "Failed to send message. Please try again.";
+    
+    if (errorData) {
+      // Backend returns error in format: { status: "error", message: "...", errors: [...] }
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+        // Pydantic validation errors
+        const firstError = errorData.errors[0];
+        errorMessage = firstError.message || firstError.msg || errorMessage;
+      } else if (typeof errorData === 'string') {
+        errorMessage = errorData;
+      }
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+    
+    // Create a new error with the extracted message
+    const enhancedError = new Error(errorMessage);
+    (enhancedError as any).response = errorResponse;
+    (enhancedError as any).status = errorResponse?.status;
+    
+    throw enhancedError;
+  }
 };
 
 /**

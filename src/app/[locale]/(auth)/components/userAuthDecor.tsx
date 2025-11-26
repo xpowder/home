@@ -17,6 +17,7 @@ export default function UserAuthDecor() {
         src={authImag}
         alt="authImage"
         fill
+        sizes="(max-width: 768px) 70vw, 500px"
         className="ml-[25%] mr-0 object-contain rtl:ml-0 rtl:mr-[25%] rtl:scale-x-[-1]"
       />
 

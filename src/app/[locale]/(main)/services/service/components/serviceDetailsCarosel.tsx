@@ -16,9 +16,22 @@ interface ServiceDetailsCaroselProps {
 export default function ServiceDetailsCarosel({
   provider,
 }: ServiceDetailsCaroselProps) {
-  const images = provider?.service_images?.map((img) => img.url) || 
-    provider?.portfolio_images?.map((img) => img.url) || 
-    ["/home/latestOffers/offer1.png"];
+  // Handle service_images - can be array of strings or array of objects
+  const getImages = () => {
+    if (provider?.service_images && provider.service_images.length > 0) {
+      return provider.service_images.map((img: any) => 
+        typeof img === 'string' ? img : img.url || img
+      );
+    }
+    if (provider?.portfolio_images && provider.portfolio_images.length > 0) {
+      return provider.portfolio_images.map((img: any) => 
+        typeof img === 'string' ? img : img.url || img
+      );
+    }
+    return ["/home/latestOffers/offer1.png"];
+  };
+  
+  const images = getImages();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [like, setLike] = useState(false);
 
@@ -85,6 +98,7 @@ export default function ServiceDetailsCarosel({
                 src={img}
                 alt={`Background ${index + 1}`}
                 fill
+                sizes="100vw"
                 className="object-cover blur-sm  brightness-90"
               />
 

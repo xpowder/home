@@ -1,8 +1,10 @@
 "use client";
 import Image from "next/image";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import React from "react";
+import React, { useState } from "react";
 import { Controller } from "react-hook-form";
+import { toast } from "sonner";
 
 import BrifCase from "@/assets/providerDashboard/BrifCase.svg";
 import CallBlue from "@/assets/providerDashboard/CallBlue.svg";
@@ -13,8 +15,11 @@ import UserProfile from "@/assets/providerDashboard/Profile.svg";
 import UploadGray from "@/assets/providerDashboard/UploadGray.svg";
 import X from "@/assets/providerDashboard/X.svg";
 import { logger } from "@/lib/logger";
-import { cityOptions, popularServices } from "@/utils/constants/homeData";
+import { cityOptions } from "@/utils/constants/homeData";
 import { type EditProfileFormType } from "@/validation/providerDashboard/editProfileSchema";
+import useCatagory from "@/hooks/useCatagory";
+import useCity from "@/hooks/useCity";
+import { updateProviderProfile, uploadProfilePhoto, uploadServicePhoto } from "@/services/provider.services";
 
 import ProviderInput from "../components/providerInput";
 import ProviderSelect from "../components/providerSelect";
@@ -26,12 +31,14 @@ interface EditProfileModalProps {
   onClose: () => void;
   defaultValues?: Partial<EditProfileFormType>;
   onSave: (service: EditProfileFormType) => void;
+  onProfileUpdate?: () => void;
 }
 
 export default function EditProfileModal({
   onClose,
   defaultValues,
   onSave,
+  onProfileUpdate,
 }: EditProfileModalProps) {
   useEditProfileForm();
 
@@ -63,114 +70,363 @@ export default function EditProfileModal({
       handleSubmit,
       control,
       reset,
+      setValue,
       formState: { errors, dirtyFields },
     },
   } = useEditProfileForm(defaultValues);
   const t = useTranslations("providersDashboard.editProfileModal");
-  console.log(t("sections.professionalDetails.uploadImage", { index: 2 + 1 }));
-  const onSubmit = (data: EditProfileFormType) => {
-    logger.info("Submitted profile:", data);
-    alert("Profile Edited successfully!");
-    onSave(data);
-    reset();
-    onClose();
+  const [submitting, setSubmitting] = useState(false);
+  const { categories } = useCatagory();
+  const { cities } = useCity();
+  const params = useParams();
+  const locale = params.locale as string;
+
+  // Create category options with ID as value and localized name as label
+  const categoryOptions = categories?.map((cat) => ({
+    value: cat.id,
+    label: cat[`name_${locale}` as keyof typeof cat] as string || cat.name_en || "",
+  })) || [];
+  
+  // Create city options with ID as value and localized name as label
+  const cityOptionsList = cities?.map((city) => ({
+    value: city.id,
+    label: city[`name_${locale}` as keyof typeof city] as string || city.name_en || "",
+  })) || [];
+
+  const onSubmit = async (data: EditProfileFormType) => {
+    try {
+      setSubmitting(true);
+      
+      // Map form data to backend format
+      // profession and city should be IDs (UUIDs) from the select component
+      let categoryId: string | undefined;
+      let cityId: string | undefined;
+      
+      // Validate and extract category ID
+      // The form should store IDs, but we'll validate and handle both cases
+      const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      
+      if (data.profession) {
+        // If it's already a valid UUID, use it directly
+        if (isValidUUID.test(data.profession)) {
+          // Verify the category ID exists in our categories list
+          const categoryExists = categories?.some(cat => cat.id === data.profession);
+          if (categoryExists) {
+            categoryId = data.profession;
+          } else {
+            throw new Error("Selected category does not exist. Please select a valid category.");
+          }
+        } else {
+          // Otherwise, try to find by name (for backward compatibility when loading from API)
+          const category = categories?.find(
+            (cat) => cat[`name_${locale}` as keyof typeof cat] === data.profession || 
+                     cat.name_en === data.profession ||
+                     cat.name_fr === data.profession ||
+                     cat.name_ar === data.profession
+          );
+          if (category) {
+            categoryId = category.id;
+          } else {
+            logger.error("Category not found:", data.profession);
+            throw new Error("Invalid category selected. Please select a category from the list.");
+          }
+        }
+      }
+      
+      if (data.city) {
+        // If it's already a valid UUID, use it directly
+        if (isValidUUID.test(data.city)) {
+          // Verify the city ID exists in our cities list
+          const cityExists = cities?.some(cityItem => cityItem.id === data.city);
+          if (cityExists) {
+            cityId = data.city;
+          } else {
+            throw new Error("Selected city does not exist. Please select a valid city.");
+          }
+        } else {
+          // Otherwise, try to find by name (for backward compatibility when loading from API)
+          const city = cities?.find(
+            (cityItem) => cityItem[`name_${locale}` as keyof typeof cityItem] === data.city || 
+                         cityItem.name_en === data.city ||
+                         cityItem.name_fr === data.city ||
+                         cityItem.name_ar === data.city
+          );
+          if (city) {
+            cityId = city.id;
+          } else {
+            logger.error("City not found:", data.city);
+            throw new Error("Invalid city selected. Please select a city from the list.");
+          }
+        }
+      }
+      
+      // Validate required fields
+      if (!categoryId || !isValidUUID.test(categoryId)) {
+        throw new Error("Category is required. Please select a valid category from the list.");
+      }
+      if (!cityId || !isValidUUID.test(cityId)) {
+        throw new Error("City is required. Please select a valid city from the list.");
+      }
+      
+      // Final validation - ensure IDs exist in our lists before sending
+      if (categoryId && categories) {
+        const validCategory = categories.find(cat => cat.id === categoryId);
+        if (!validCategory) {
+          logger.error("Invalid category ID:", categoryId, "Available categories:", categories.map(c => c.id));
+          throw new Error(`Invalid category ID. Please refresh the page and try again.`);
+        }
+      }
+      
+      if (cityId && cities) {
+        const validCity = cities.find(cityItem => cityItem.id === cityId);
+        if (!validCity) {
+          logger.error("Invalid city ID:", cityId, "Available cities:", cities.map(c => c.id));
+          throw new Error(`Invalid city ID. Please refresh the page and try again.`);
+        }
+      }
+      
+      logger.info("Submitting profile update with category ID:", categoryId, "and city ID:", cityId);
+
+      // Extract years from experience string (e.g., "5 years" -> 5)
+      const yearsExperience = data.experience 
+        ? (() => {
+            const yearsMatch = data.experience.match(/(\d+)/);
+            return yearsMatch ? parseInt(yearsMatch[1]) : undefined;
+          })()
+        : undefined;
+
+      // Build update data according to backend schema
+      // Only include fields that have values (required fields: category and city)
+      const updateData: {
+        service_category?: string;
+        city?: string;
+        service_title?: string;
+        bio?: string;
+        years_experience?: number;
+        starting_price_mad?: number;
+        full_address?: string;
+      } = {};
+      
+      // REQUIRED fields
+      if (categoryId) updateData.service_category = categoryId;
+      if (cityId) updateData.city = cityId;
+      
+      // Optional fields - only include if they have values
+      if (data.fullName && data.fullName.trim()) {
+        updateData.service_title = data.fullName.trim();
+      }
+      if (data.bio && data.bio.trim()) {
+        updateData.bio = data.bio.trim();
+      }
+      if (yearsExperience !== undefined && yearsExperience !== null && yearsExperience > 0) {
+        updateData.years_experience = yearsExperience;
+      }
+      if (data.startingPrice !== undefined && data.startingPrice !== null && data.startingPrice >= 0) {
+        updateData.starting_price_mad = data.startingPrice;
+      }
+      if (data.serviceArea && data.serviceArea.trim()) {
+        updateData.full_address = data.serviceArea.trim();
+      }
+
+      // Call API to update provider profile
+      // Endpoint: /api/profile/update-provider
+      const response = await updateProviderProfile(updateData);
+      
+      logger.info("Profile updated successfully:", response);
+      
+      // Log the active provider status from response
+      if (response.user?.is_active_provider !== undefined) {
+        logger.info(`Provider active status: ${response.user.is_active_provider}`);
+      }
+
+      // Profile photo is already uploaded when user selects it (via handleProfileImageChange)
+      // So we just need to get the URL from the form data
+      let profilePhotoUrl: string | null = null;
+      if (data.profileImage) {
+        profilePhotoUrl = typeof data.profileImage === "string" 
+          ? data.profileImage 
+          : null; // If it's still a File, it means upload failed, but we'll handle it
+      }
+
+      // Upload service photo if changed
+      if (data.serviceImage && data.serviceImage instanceof File) {
+        try {
+          await uploadServicePhoto(data.serviceImage);
+          logger.info("Service photo uploaded successfully");
+        } catch (photoError) {
+          logger.error("Error uploading service photo:", photoError);
+          // Don't fail the whole update if photo upload fails
+        }
+      }
+
+      // Update data with profile photo URL
+      const updatedData = profilePhotoUrl 
+        ? { ...data, profileImage: profilePhotoUrl }
+        : data;
+
+      toast.success("Profile updated successfully!");
+      onSave(updatedData);
+      if (onProfileUpdate) {
+        onProfileUpdate();
+      }
+      reset();
+      onClose();
+    } catch (error: any) {
+      logger.error("Error updating profile:", error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Failed to update profile. Please try again.";
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Custom handler to upload profile photo immediately when selected
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (file) {
+      try {
+        setSubmitting(true);
+        const response = await uploadProfilePhoto(file);
+        if (response.photo_url) {
+          // Update form with the uploaded photo URL
+          setValue("profileImage", response.photo_url, { shouldValidate: true });
+          toast.success("Profile photo uploaded successfully!");
+          // Refresh parent profile component
+          if (onProfileUpdate) {
+            onProfileUpdate();
+          }
+        }
+      } catch (error) {
+        logger.error("Error uploading profile photo:", error);
+        toast.error("Failed to upload profile photo.");
+      } finally {
+        setSubmitting(false);
+      }
+    }
   };
 
   const percentComplete = 80;
 
   return (
-    <div className="fixed inset-0  z-50 flex items-center justify-center bg-black/20 p-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 md:p-5">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="editProfileTitle"
         aria-describedby="editProfileDescription"
-        className="scrollbar-hide relative  max-h-[90vh] w-full overflow-y-auto rounded-xl lg:w-[800px]"
+        className="scrollbar-hide relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white dark:bg-gray-900 shadow-2xl"
       >
-        <div className="origin-top scale-[1] overflow-y-auto rounded-xl bg-white shadow-xl md:scale-[1]">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 pb-3 pt-6">
-            <div>
-              <h2 className="text-foreground text-xl font-semibold">{t("title")}</h2>
-              <p className="font-roboto text-[14px] font-normal text-[#4B5563]">
-                <p>{t("description")}</p>
-              </p>
-            </div>
-            <button onClick={onClose} aria-label="Close edit profile modal">
-              <X className="text-muted-foreground h-4 w-4 cursor-pointer" />
-            </button>
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-6 py-4">
+          <div>
+            <h2 id="editProfileTitle" className="text-gray-900 dark:text-white text-xl font-semibold">
+              {t("title") || "Edit Profile"}
+            </h2>
+            <p id="editProfileDescription" className="font-roboto text-sm font-normal text-gray-600 dark:text-gray-400 mt-1">
+              {t("description") || "Keep your information up to date so clients can find and trust you."}
+            </p>
           </div>
+          <button 
+            onClick={onClose} 
+            aria-label="Close edit profile modal"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            <X className="h-5 w-5 cursor-pointer" />
+          </button>
+        </div>
 
-          {/* Progress bar */}
-
-          <div className="w-full space-y-2 border-b border-gray-200 px-6">
-            <h4 className="font-poppins text-[14px] font-medium text-[#374151]">
-              {t("profileCompletion.label", { percent: percentComplete })}
+        {/* Progress bar */}
+        <div className="w-full space-y-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <h4 className="font-poppins text-sm font-medium text-gray-700 dark:text-gray-300">
+              Profile {percentComplete}% complete
             </h4>
-            <div className="mb-6 h-2 w-full rounded-full bg-gray-200">
-              <div
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${percentComplete}%` }}
-                aria-valuenow={percentComplete}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={t("profileCompletion.ariaLabel", { percent: percentComplete })}
-              />
-            </div>
+            <span className="font-poppins text-sm font-medium text-primary">
+              Almost there!
+            </span>
           </div>
+          <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+            <div
+              className="bg-primary h-2 rounded-full transition-all duration-300"
+              style={{ width: `${percentComplete}%` }}
+              aria-valuenow={percentComplete}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Profile ${percentComplete}% complete`}
+            />
+          </div>
+        </div>
 
-          <form aria-label="Edit Profile Form" onSubmit={handleSubmit(onSubmit)} className=" ">
-            <div className="space-y-6 p-6">
+        <form aria-label="Edit Profile Form" onSubmit={handleSubmit(onSubmit)} className="overflow-y-auto">
+          <div className="space-y-8 p-6">
+            {/* Profile Information Section */}
+            <div className="space-y-4">
+              <h3 className="font-poppins flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+                <UserProfile className="h-5 w-5 text-primary" />
+                {t("sections.profileInformation.heading") || "Profile Information"}
+              </h3>
+              
               {/* Avatar */}
               <div className="flex flex-col items-center">
-                <h3 className="font-poppins mb-4 flex items-center justify-start gap-2 self-start text-[18px] font-semibold text-[#111827]">
-                  <UserProfile className="h-4 w-4 " />
-                  {t("sections.profileInformation.heading")}
-                </h3>
-                <div className="relative mb-2 h-24 w-24 rounded-full">
+                <div className="relative mb-3 h-24 w-24 rounded-full">
                   <Image
                     src={
                       profileImage
                         ? typeof profileImage === "string"
-                          ? profileImage // ✅ existing backend URL
-                          : URL.createObjectURL(profileImage) // ✅ new uploaded file
-                        : ProfileImage // fallback
+                          ? profileImage
+                          : URL.createObjectURL(profileImage)
+                        : ProfileImage
                     }
                     alt="Profile"
                     width={96}
                     height={96}
-                    className="h-[96px] w-[96px] rounded-full"
+                    className="h-24 w-24 rounded-full object-cover"
                   />
-                  <div
+                  <button
+                    type="button"
                     onClick={handleProfileClick}
-                    className="bg-primaryDark absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full"
+                    className="bg-primary absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full shadow-md hover:bg-primaryDark transition-colors"
                   >
-                    <Camera className="h-4 w-4 cursor-pointer" />
-                  </div>
+                    <Camera className="h-4 w-4 text-white" />
+                  </button>
+                  <input
+                    ref={profileImageRef}
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    className="hidden"
+                    onChange={handleProfileImageChange}
+                  />
                 </div>
-                <input
-                  ref={profileImageRef}
-                  type="file"
-                  accept="image/png, image/jpeg"
-                  className="hidden"
-                  onChange={(e) => onProfileChange(e)}
-                />
                 <button
                   type="button"
-                  className="font-roboto text-primaryDark text-[14px] font-medium"
+                  onClick={handleProfileClick}
+                  className="font-roboto text-primary text-sm font-medium hover:underline"
                 >
-                  {t("sections.profileInformation.changePhoto")}
+                  {t("sections.profileInformation.changePhoto") || "Change Photo"}
                 </button>
-                <p className="font-roboto mt-2 text-[12px] font-normal text-[#6B7280]">
-                  {t("sections.profileInformation.avatarTip")}
+                <p className="font-roboto mt-1 text-xs font-normal text-gray-500 dark:text-gray-400 text-center">
+                  {t("sections.profileInformation.avatarTip") || "Add a photo - profiles with pictures get 3x more views."}
                 </p>
+                {errors.profileImage && (
+                  <p className="text-red-500 text-xs mt-1 text-center">{errors.profileImage.message}</p>
+                )}
               </div>
 
-              {/* Basic Info */}
+              {/* Basic Info Fields */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <ProviderInput
-                  label={t("sections.basicInfo.fullName")}
-                  placeholder={t("sections.basicInfo.fullNamePlaceholder")}
+                  label={t("sections.basicInfo.fullName") || "Full Name / Business Name"}
+                  placeholder={t("sections.basicInfo.fullNamePlaceholder") || "e.g. Youssef Plumbing Services"}
                   error={errors.fullName}
                   dirty={!!dirtyFields.fullName}
                   {...register("fullName")}
@@ -182,9 +438,9 @@ export default function EditProfileModal({
                   render={({ field }) => (
                     <ProviderSelect
                       {...field}
-                      label={t("sections.basicInfo.profession")}
-                      placeholder={t("sections.basicInfo.professionPlaceholder")}
-                      options={popularServices}
+                      label={`${t("sections.basicInfo.profession") || "Profession / Category"} *`}
+                      placeholder={t("sections.basicInfo.professionPlaceholder") || "Select your profession"}
+                      options={categoryOptions}
                       error={errors.profession}
                       dirty={!!dirtyFields.profession}
                     />
@@ -193,12 +449,17 @@ export default function EditProfileModal({
               </div>
 
               <ProviderTextarea
-                label={t("sections.basicInfo.bio")}
-                placeholder={t("sections.basicInfo.bioPlaceholder")}
+                label={t("sections.basicInfo.bio") || "Bio / About Me"}
+                placeholder={t("sections.basicInfo.bioPlaceholder") || "Describe your experience and what makes you unique."}
                 error={errors.bio}
                 dirty={!!dirtyFields.bio}
                 {...register("bio")}
               />
+              {dirtyFields.bio && !errors.bio && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
+                  Your bio helps clients understand your style and expertise.
+                </p>
+              )}
 
               {/* Location & Experience */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -208,9 +469,9 @@ export default function EditProfileModal({
                   render={({ field }) => (
                     <ProviderSelect
                       {...field}
-                      label={t("sections.locationExperience.city")}
+                      label={`${t("sections.locationExperience.city")} *`}
                       placeholder={t("sections.locationExperience.cityPlaceholder")}
-                      options={cityOptions}
+                      options={cityOptionsList.length > 0 ? cityOptionsList : cityOptions}
                       error={errors.city}
                       dirty={dirtyFields.city}
                     />
@@ -236,7 +497,20 @@ export default function EditProfileModal({
                   {...register("experience")}
                 />
 
-                {/* Languages */}
+                <ProviderInput
+                  label="Pricing"
+                  placeholder={t("sections.locationExperience.startingPricePlaceholder") || "Enter your starting price"}
+                  type="number"
+                  min="0"
+                  step="1"
+                  error={errors.startingPrice}
+                  dirty={!!dirtyFields.startingPrice}
+                  {...register("startingPrice", { valueAsNumber: true })}
+                />
+              </div>
+
+              {/* Languages */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div aria-label="Languages Spoken Section">
                   <Inputlabel label={t("sections.languages.label")} />
                   <div
@@ -334,12 +608,12 @@ export default function EditProfileModal({
                 </div>
               </div>
 
-              {/* Contact */}
-              <div className="space-y-4">
-                <h3 className="font-poppins mb-4 flex items-center justify-start gap-2 text-[18px] font-semibold text-[#111827]">
-                  <CallBlue className="h-4 w-4 " />
-                  {t("sections.contactMethods.heading")}
-                </h3>
+            {/* Contact Methods Section */}
+            <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+              <h3 className="font-poppins flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+                <CallBlue className="h-5 w-5 text-primary" />
+                {t("sections.contactMethods.heading") || "Contact Methods"}
+              </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <ProviderInput
                     label={t("sections.contactMethods.phone")}
@@ -365,12 +639,12 @@ export default function EditProfileModal({
                 />
               </div>
 
-              {/* service Image */}
-              <div>
-                <h3 className="font-poppins mb-4 flex items-center justify-start gap-2 text-[18px] font-semibold text-[#111827]">
-                  <BrifCase className="h-4 w-4" />
-                  {t("sections.professionalDetails.heading")}
-                </h3>
+            {/* Professional Details Section */}
+            <div className="space-y-4 border-t border-gray-200 dark:border-gray-700 pt-6">
+              <h3 className="font-poppins flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+                <BrifCase className="h-5 w-5 text-primary" />
+                {t("sections.professionalDetails.heading") || "Professional Details"}
+              </h3>
                 <div className="w-full space-y-2">
                   <Inputlabel label={t("sections.professionalDetails.uploadPortfolio")} />
                   <div
@@ -475,27 +749,28 @@ export default function EditProfileModal({
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Buttons */}
-            <div className="flex items-center justify-center gap-4 border-t border-gray-200 p-6 pt-5">
-              <button
-                type="button"
-                aria-label="Close Modal"
-                onClick={onClose}
-                className="border-1 w-full cursor-pointer rounded-lg border-gray-200 py-2 text-[#374151] duration-300 hover:bg-gray-300"
-              >
-                {t("buttons.cancel")}
-              </button>
-              <button
-                type="submit"
-                aria-label="Save Profile Changes"
-                className="bg-primary hover:bg-btnHover w-full cursor-pointer rounded-lg py-2 text-white shadow-md duration-300"
-              >
-                {t("buttons.saveChanges")}
-              </button>
-            </div>
-          </form>
-        </div>
+          {/* Footer buttons */}
+          <div className="sticky bottom-0 flex items-center justify-end gap-4 border-t border-gray-200 bg-white px-6 py-4">
+            <button
+              type="button"
+              aria-label="Close Modal"
+              onClick={onClose}
+              className="font-roboto w-full cursor-pointer rounded-lg border border-[#D1D5DB] bg-white px-6 py-2.5 text-sm font-medium text-[#374151] transition duration-300 hover:bg-gray-50 sm:w-auto"
+            >
+              {t("buttons.cancel") || "Cancel"}
+            </button>
+            <button
+              type="submit"
+              aria-label="Save Profile Changes"
+              className="bg-primary hover:bg-primaryDark font-roboto w-full cursor-pointer rounded-lg px-6 py-2.5 text-sm font-medium text-white shadow-sm transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
+              disabled={submitting}
+            >
+              {submitting ? (t("buttons.saving") || "Saving...") : (t("buttons.saveChanges") || "Save Changes")}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

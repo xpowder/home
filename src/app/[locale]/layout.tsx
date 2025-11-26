@@ -8,6 +8,7 @@ import { routing } from "@/i18n/routing";
 import { AuthProvider } from "@/store/AuthContext";
 import { LanguageProvider } from "@/store/LanguageContext";
 import { ThemeProvider } from "@/store/ThemeProvider";
+import GlobalErrorHandler from "@/components/shared/GlobalErrorHandler";
 
 import NoInternet from "./no-internet";
 
@@ -20,7 +21,12 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function LocaleLayout({ children, params }: LayoutProps<"/[locale]">) {
+type LayoutProps = {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+};
+
+export default async function LocaleLayout({ children, params }: LayoutProps) {
   const { locale } = await params;
   // if (!hasLocale(routing.locales, locale)) {
   //   return <NotFound />;
@@ -42,6 +48,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <ThemeProvider attribute={"class"} defaultTheme="light" enableSystem>
           <LanguageProvider>
             <AuthProvider>
+              <GlobalErrorHandler />
               <NoInternet />
               {children}
               <Toaster position="top-right" richColors duration={4000} />

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 
 import PostCard from "../homeComponents/postCard/PostCard";
 import ProviderCard from "@/components/shared/ProviderCard";
@@ -8,24 +8,50 @@ import ServicesHero from "./components/ServicesHero";
 import { searchProviders, Provider } from "@/services/provider.services";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
+import useCatagory from "@/hooks/useCatagory";
+import useCity from "@/hooks/useCity";
 
 export default function ServicesPage() {
   const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = params.locale as string;
+  const { categories } = useCatagory();
+  const { cities } = useCity();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
 
-  const category = searchParams.get("category");
-  const city = searchParams.get("city");
+  const categoryId = searchParams.get("category");
+  const cityId = searchParams.get("city");
+
+  // Convert IDs to names for API (backend filters by name, not ID)
+  const getCategoryName = (id: string | null) => {
+    if (!id || !categories) return undefined;
+    const category = categories.find((c) => c.id === id);
+    if (!category) return undefined;
+    return category[`name_${locale}` as keyof typeof category] as string || category.name_en;
+  };
+
+  const getCityName = (id: string | null) => {
+    if (!id || !cities) return undefined;
+    const city = cities.find((c) => c.id === id);
+    if (!city) return undefined;
+    return city[`name_${locale}` as keyof typeof city] as string || city.name_en;
+  };
 
   useEffect(() => {
     const fetchProviders = async () => {
       try {
         setLoading(true);
+        
+        // Convert IDs to names for backend API
+        const categoryName = getCategoryName(categoryId);
+        const cityName = getCityName(cityId);
+        
         const response = await searchProviders({
-          category: category || undefined,
-          city: city || undefined,
+          category: categoryName,
+          city: cityName,
           limit: 20,
           offset: 0,
         });
@@ -40,14 +66,21 @@ export default function ServicesPage() {
       }
     };
 
-    fetchProviders();
-  }, [category, city]);
+    // Only fetch if categories and cities are loaded (to convert IDs to names)
+    if (categories && cities) {
+      fetchProviders();
+    }
+  }, [categoryId, cityId, categories, cities, locale]);
 
   const loadMore = async () => {
     try {
+      // Convert IDs to names for backend API
+      const categoryName = getCategoryName(categoryId);
+      const cityName = getCityName(cityId);
+      
       const response = await searchProviders({
-        category: category || undefined,
-        city: city || undefined,
+        category: categoryName,
+        city: cityName,
         limit: 20,
         offset,
       });

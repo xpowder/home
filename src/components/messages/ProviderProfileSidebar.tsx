@@ -39,10 +39,16 @@ export default function ProviderProfileSidebar({ conversation }: ProviderProfile
           try {
             const response = await getProviderDetails(otherUserId);
             setProvider(response.provider);
-          } catch (error) {
+          } catch (error: any) {
             // If it's a client (not a provider), we can't fetch provider details
-            // In that case, we'll show basic info from conversation
-            logger.warning("Could not fetch provider details, may be a client:", error);
+            // Check if it's a 404 error (not a provider) vs other errors
+            if (error?.response?.status === 404) {
+              // Silently handle 404 - the other user is likely a client, not a provider
+              logger.info("Other user is not a provider, showing basic info from conversation");
+            } else {
+              // Log other errors (network, 500, etc.)
+              logger.warn("Could not fetch provider details:", error);
+            }
           }
         }
       } catch (error) {
@@ -57,8 +63,8 @@ export default function ProviderProfileSidebar({ conversation }: ProviderProfile
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center bg-white p-4">
-        <div className="text-subtext">Loading profile...</div>
+      <div className="flex h-full items-center justify-center bg-white dark:bg-gray-900 p-4">
+        <div className="text-subtext dark:text-gray-400">Loading profile...</div>
       </div>
     );
   }
@@ -73,8 +79,8 @@ export default function ProviderProfileSidebar({ conversation }: ProviderProfile
 
   if (!provider && !otherUserName) {
     return (
-      <div className="flex h-full items-center justify-center bg-white p-4">
-        <div className="text-subtext text-center">User information not available</div>
+      <div className="flex h-full items-center justify-center bg-white dark:bg-gray-900 p-4">
+        <div className="text-subtext dark:text-gray-400 text-center">User information not available</div>
       </div>
     );
   }
@@ -89,7 +95,7 @@ export default function ProviderProfileSidebar({ conversation }: ProviderProfile
   const phone = provider?.phone || "";
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-white p-6">
+    <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-gray-900 p-6">
       {/* Profile Header */}
       <div className="mb-6 text-center">
         <div className="relative mx-auto mb-4 h-24 w-24">
@@ -97,17 +103,18 @@ export default function ProviderProfileSidebar({ conversation }: ProviderProfile
             src={profileImage}
             alt={fullName}
             fill
+            sizes="96px"
             className="rounded-full object-cover"
           />
         </div>
         <div className="flex items-center justify-center gap-2">
-          <h3 className="font-roboto text-heading text-lg font-semibold">{fullName}</h3>
-          {provider.is_active_provider && (
+          <h3 className="font-roboto text-heading dark:text-white text-lg font-semibold">{fullName}</h3>
+          {provider?.is_active_provider && (
             <Check className="text-primary h-5 w-5" />
           )}
         </div>
-        <p className="text-subtext mt-1 text-sm">{serviceCategory}</p>
-        <p className="text-subtext mt-1 text-sm">{city}</p>
+        <p className="text-subtext dark:text-gray-400 mt-1 text-sm">{serviceCategory}</p>
+        <p className="text-subtext dark:text-gray-400 mt-1 text-sm">{city}</p>
       </div>
 
       {/* Contact Buttons */}
@@ -115,7 +122,7 @@ export default function ProviderProfileSidebar({ conversation }: ProviderProfile
         {phone && (
           <a
             href={`tel:${phone}`}
-            className="bg-primaryLight hover:bg-primaryLight/80 flex flex-col items-center justify-center gap-2 rounded-lg p-3 transition-colors"
+            className="bg-primaryLight dark:bg-primary/20 hover:bg-primaryLight/80 dark:hover:bg-primary/30 flex flex-col items-center justify-center gap-2 rounded-lg p-3 transition-colors"
             aria-label="Call provider"
           >
             <Phone className="text-primary h-5 w-5" />
@@ -128,51 +135,59 @@ export default function ProviderProfileSidebar({ conversation }: ProviderProfile
             href={`https://wa.me/${phone.replace(/\D/g, "")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-green-50 hover:bg-green-100 flex flex-col items-center justify-center gap-2 rounded-lg p-3 transition-colors"
+            className="bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 flex flex-col items-center justify-center gap-2 rounded-lg p-3 transition-colors"
             aria-label="WhatsApp provider"
           >
-            <WhatsappWhite className="h-5 w-5 text-green-600" />
-            <span className="text-xs font-medium text-green-600">WhatsApp</span>
+            <WhatsappWhite className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span className="text-xs font-medium text-green-600 dark:text-green-400">WhatsApp</span>
           </a>
         )}
 
-        <Link
-          href={`/${locale}/services/${provider.id}`}
-          className="bg-gray-50 hover:bg-gray-100 flex flex-col items-center justify-center gap-2 rounded-lg p-3 transition-colors"
-          aria-label="View profile"
-        >
-          <Profile className="h-5 w-5 text-gray-600" />
-          <span className="text-xs font-medium text-gray-600">Profile</span>
-        </Link>
+        {provider?.id && (
+          <Link
+            href={`/${locale}/services/${provider.id}`}
+            className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 flex flex-col items-center justify-center gap-2 rounded-lg p-3 transition-colors"
+            aria-label="View profile"
+          >
+            <Profile className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Profile</span>
+          </Link>
+        )}
+        {!provider?.id && (
+          <div className="bg-gray-50 dark:bg-gray-800 flex flex-col items-center justify-center gap-2 rounded-lg p-3 opacity-50 cursor-not-allowed">
+            <Profile className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Profile</span>
+          </div>
+        )}
       </div>
 
       {/* Rating */}
       <div className="mb-6 flex items-center justify-center gap-2">
         <Star className="text-supporting fill-supporting h-5 w-5" />
-        <span className="font-roboto text-heading text-base font-semibold">
+        <span className="font-roboto text-heading dark:text-white text-base font-semibold">
           {rating.toFixed(1)} ({reviewCount} reviews)
         </span>
       </div>
 
       {/* About Section */}
       <div className="mb-6">
-        <h4 className="font-roboto text-heading mb-2 text-sm font-semibold">About</h4>
-        <p className="text-subtext text-sm leading-relaxed">{bio}</p>
+        <h4 className="font-roboto text-heading dark:text-white mb-2 text-sm font-semibold">About</h4>
+        <p className="text-subtext dark:text-gray-400 text-sm leading-relaxed">{bio}</p>
       </div>
 
       {/* Top Services Section */}
-      {provider.service_title && (
+      {provider?.service_title && (
         <div>
-          <h4 className="font-roboto text-heading mb-3 text-sm font-semibold">Top Services</h4>
+          <h4 className="font-roboto text-heading dark:text-white mb-3 text-sm font-semibold">Top Services</h4>
           <div className="space-y-3">
-            <div className="border-subtextSection rounded-lg border p-3">
+            <div className="border-subtextSection dark:border-gray-700 rounded-lg border p-3">
               <div className="flex items-center gap-2">
-                <div className="bg-primaryLight flex h-8 w-8 items-center justify-center rounded-lg">
+                <div className="bg-primaryLight dark:bg-primary/20 flex h-8 w-8 items-center justify-center rounded-lg">
                   <span className="text-primary text-lg">⚡</span>
                 </div>
                 <div className="flex-1">
-                  <p className="font-roboto text-heading text-sm font-medium">{provider.service_title}</p>
-                  <p className="text-subtext text-xs">
+                  <p className="font-roboto text-heading dark:text-white text-sm font-medium">{provider.service_title}</p>
+                  <p className="text-subtext dark:text-gray-400 text-xs">
                     Starting from {provider.starting_price_mad || 0} MAD {city}
                   </p>
                 </div>

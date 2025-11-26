@@ -44,27 +44,27 @@ export default function ConversationList({
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-subtext">Loading conversations...</div>
+      <div className="flex h-full items-center justify-center bg-white dark:bg-gray-900">
+        <div className="text-subtext dark:text-gray-400">Loading conversations...</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="border-b border-gray-200 p-4">
-        <h2 className="font-poppins text-heading mb-4 text-xl font-semibold">Messages</h2>
+      <div className="border-b border-gray-200 dark:border-gray-700 p-4">
+        <h2 className="font-poppins text-heading dark:text-white mb-4 text-xl font-semibold">Messages</h2>
         
         {/* Search Bar */}
         <div className="relative">
-          <Search className="text-subtext absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+          <Search className="text-subtext dark:text-gray-400 absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-heading dark:text-white py-2 pl-10 pr-4 text-sm placeholder:text-subtext dark:placeholder:text-gray-500 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:focus:border-primary"
           />
         </div>
       </div>
@@ -73,7 +73,7 @@ export default function ConversationList({
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.length === 0 ? (
           <div className="flex h-full items-center justify-center p-4">
-            <p className="text-subtext text-center text-sm">
+            <p className="text-subtext dark:text-gray-400 text-center text-sm">
               {searchQuery ? "No conversations found" : "No conversations yet"}
             </p>
           </div>
@@ -90,8 +90,8 @@ export default function ConversationList({
               <div
                 key={conversation.id}
                 onClick={() => onSelectConversation(conversation)}
-                className={`cursor-pointer border-b border-gray-100 p-4 transition-colors hover:bg-gray-50 ${
-                  isSelected ? "bg-primary/5 border-l-4 border-l-primary" : ""
+                className={`cursor-pointer border-b border-gray-100 dark:border-gray-800 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                  isSelected ? "bg-primary/5 dark:bg-primary/10 border-l-4 border-l-primary" : ""
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -101,6 +101,7 @@ export default function ConversationList({
                       src={otherUserImage}
                       alt={otherUser}
                       fill
+                      sizes="48px"
                       className="rounded-full object-cover"
                     />
                   </div>
@@ -108,7 +109,7 @@ export default function ConversationList({
                   {/* Conversation Info */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-roboto text-heading truncate text-sm font-semibold">
+                      <h3 className="font-roboto text-heading dark:text-white truncate text-sm font-semibold">
                         {otherUser}
                       </h3>
                       {conversation.unread_count > 0 && (
@@ -117,13 +118,13 @@ export default function ConversationList({
                         </span>
                       )}
                     </div>
-                    <p className="text-subtext mt-1 truncate text-xs">
+                    <p className="text-subtext dark:text-gray-400 mt-1 truncate text-xs">
                       {conversation.last_message || "No messages yet"}
                     </p>
                     <div className="mt-1 flex items-center gap-2">
-                      <span className="text-subtext text-xs">{serviceType}</span>
-                      <span className="text-subtext text-xs">•</span>
-                      <span className="text-subtext text-xs">
+                      <span className="text-subtext dark:text-gray-400 text-xs">{serviceType}</span>
+                      <span className="text-subtext dark:text-gray-400 text-xs">•</span>
+                      <span className="text-subtext dark:text-gray-400 text-xs">
                         {formatTimeAgo(conversation.last_message_at || conversation.updated_at)}
                       </span>
                     </div>
